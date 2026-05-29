@@ -28,9 +28,12 @@ def send_approval_request(config_path: str = "config.example.yaml", video_count:
     keyboard = {
         "inline_keyboard": [
             [
-                {"text": "Approve and publish", "callback_data": "approve_latest"},
+                {"text": "Save package", "callback_data": "save_latest"},
+                {"text": "Direct post", "callback_data": "post_latest"},
+            ],
+            [
                 {"text": "Reject", "callback_data": "reject_latest"},
-            ]
+            ],
         ]
     }
     response = _post(
@@ -80,7 +83,15 @@ def _handle_callback(token: str, callback: dict[str, Any]) -> None:
         _save_state({"status": "rejected", "draft_path": str(DRAFT_PATH)})
         return
 
-    if data != "approve_latest":
+    if data == "save_latest":
+        draft = load_draft()
+        result = get_publisher("dry_run").publish(draft)
+        _save_state({"status": "saved", "draft_path": str(DRAFT_PATH), "results": [result]})
+        _post(token, "answerCallbackQuery", {"callback_query_id": callback_id, "text": "Saved for manual upload."})
+        _send_saved_package(token, callback["message"]["chat"]["id"], draft, result)
+        return
+
+    if data != "post_latest":
         _post(token, "answerCallbackQuery", {"callback_query_id": callback_id, "text": "Unknown action."})
         return
 
@@ -94,6 +105,22 @@ def _handle_callback(token: str, callback: dict[str, Any]) -> None:
     _post(token, "answerCallbackQuery", {"callback_query_id": callback_id, "text": "Approved."})
     chat_id = callback["message"]["chat"]["id"]
     _post(token, "sendMessage", {"chat_id": chat_id, "text": f"Done:\n{json.dumps(results, indent=2)[:3000]}"})
+
+
+def _send_saved_package(token: str, chat_id: int, draft, result: dict[str, Any]) -> None:
+    text = (
+        "Saved package is ready for manual upload.\n\n"
+        f"Hook:\n{draft.hook}\n\n"
+        f"Caption and hashtags:\n{draft.caption}\n\n"
+        f"Local saved file: {result.get('path')}"
+    )
+    _post(token, "sendMessage", {"chat_id": chat_id, "text": text[:3500]})
+    if draft.image_path and Path(draft.image_path).exists():
+        _post_file(token, "sendPhoto", {"chat_id": chat_id, "caption": "Image post"}, "photo", Path(draft.image_path))
+    for index, video_path in enumerate(draft.video_paths, start=1):
+        path = Path(video_path)
+        if path.exists():
+            _post_file(token, "sendVideo", {"chat_id": chat_id, "caption": f"Video {index}"}, "video", path)
 
 
 def _telegram_credentials() -> tuple[str, str]:
