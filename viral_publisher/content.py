@@ -1,4 +1,5 @@
 from collections import Counter
+import json
 import re
 
 import requests
@@ -37,7 +38,7 @@ def create_draft(
 
     try:
         ai_post = generate_original_post(config or {}, stories)
-    except (requests.RequestException, KeyError, IndexError, ValueError, TypeError):
+    except (requests.RequestException, KeyError, IndexError, ValueError, TypeError, json.JSONDecodeError):
         ai_post = None
     if ai_post:
         keywords = _extract_keywords(stories)
