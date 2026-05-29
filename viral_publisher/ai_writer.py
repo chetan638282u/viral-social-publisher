@@ -39,7 +39,7 @@ def _generate_with_openrouter(prompt: str) -> dict[str, Any] | None:
     if not api_key:
         return None
 
-    model = os.getenv("OPENROUTER_MODEL", "qwen/qwen3-8b:free")
+    model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
