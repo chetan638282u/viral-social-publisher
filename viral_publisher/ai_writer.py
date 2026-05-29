@@ -8,12 +8,20 @@ from viral_publisher.models import Story
 
 
 def generate_original_post(config: dict, stories: list[Story]) -> dict[str, Any] | None:
+    prompt = _build_prompt(config, stories)
+    for provider in (_generate_with_gemini, _generate_with_openrouter):
+        result = provider(prompt)
+        if result:
+            return result
+    return None
+
+
+def _generate_with_gemini(prompt: str) -> dict[str, Any] | None:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return None
 
     model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-    prompt = _build_prompt(config, stories)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     response = requests.post(
         url,
@@ -23,6 +31,32 @@ def generate_original_post(config: dict, stories: list[Story]) -> dict[str, Any]
     )
     response.raise_for_status()
     text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+    return _parse_json(text)
+
+
+def _generate_with_openrouter(prompt: str) -> dict[str, Any] | None:
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        return None
+
+    model = os.getenv("OPENROUTER_MODEL", "qwen/qwen3-8b:free")
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/chetan638282u/viral-social-publisher",
+            "X-Title": "Viral Social Publisher",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"},
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    text = response.json()["choices"][0]["message"]["content"]
     return _parse_json(text)
 
 
