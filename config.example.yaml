@@ -1,0 +1,43 @@
+brand:
+  name: "Your Brand"
+  tone: "clear, curious, energetic, responsible"
+  audience: "people who want quick updates on AI, technology, gaming, and major public-interest news"
+
+content:
+  max_sources: 8
+  daily_video_count: 2
+  categories:
+    - ai
+    - technology
+    - gaming
+    - public_interest
+  blocked_topics:
+    - medical advice
+    - financial advice
+    - hate or harassment
+    - unverified accusations
+  originality_rules:
+    - Research sources for facts only.
+    - Do not copy article sentences.
+    - Write fresh hooks, captions, and scripts in the brand voice.
+    - Mention sources for transparency.
+
+feeds:
+  - name: The Verge AI
+    url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+  - name: TechCrunch AI
+    url: https://techcrunch.com/category/artificial-intelligence/feed/
+  - name: Wired AI
+    url: https://www.wired.com/feed/tag/ai/latest/rss
+  - name: IGN
+    url: https://feeds.ign.com/ign/games-all
+
+platforms:
+  instagram:
+    enabled: false
+  facebook:
+    enabled: false
+  linkedin:
+    enabled: false
+  youtube:
+    enabled: false
