@@ -3,6 +3,7 @@ import os
 import requests
 
 from viral_publisher.models import DraftPost
+from viral_publisher.media_hosting import upload_to_github_raw
 from viral_publisher.publishers.base import Publisher
 
 
@@ -18,7 +19,12 @@ class InstagramPublisher(Publisher):
                 "META_GRAPH_VERSION, INSTAGRAM_ACCESS_TOKEN, and INSTAGRAM_BUSINESS_ACCOUNT_ID are required."
             )
         if not public_image_url and not public_video_url:
-            raise RuntimeError("PUBLIC_IMAGE_URL or PUBLIC_VIDEO_URL is required. Instagram's API needs a public media URL.")
+            if draft.video_path:
+                public_video_url = upload_to_github_raw(draft.video_path, prefix="videos")
+            elif draft.image_path:
+                public_image_url = upload_to_github_raw(draft.image_path, prefix="images")
+            else:
+                raise RuntimeError("A generated image or video is required for Instagram publishing.")
 
         payload = {"caption": draft.caption, "access_token": token}
         if public_video_url:
