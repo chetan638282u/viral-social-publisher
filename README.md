@@ -1,21 +1,32 @@
 # Viral Social Publisher
 
-Python starter project for a daily, approval-first social media content pipeline.
+Python starter project for a daily, approval-first social media content pipeline. It also includes a Windows PowerShell runner for PCs where Python is not installed.
 
 It can:
 
+- Collect fresh story ideas from configured RSS/news feeds.
 - Research source notes, then draft original hooks, captions, hashtags, and platform-specific copy.
-- Use Gemini when `GEMINI_API_KEY` is provided, with a built-in non-AI fallback.
+- Use Gemini/OpenRouter when keys are provided, with a built-in fallback.
 - Create a simple square image with text overlay.
-- Create an original audio track and 1-2 MP4 short videos per day.
 - Save an approval package for review.
-- Send approval requests to Telegram with approve/reject buttons.
+- Send approval requests to Telegram with Save package, Direct post, and Reject buttons.
 - Publish only after you approve.
 - Use official platform APIs through publisher modules.
 
 Important: this project avoids unsafe automation by default. It does not steal copyrighted music, scrape private pages, or publish unverified political claims. Real posting requires official API access and your account tokens.
 
-## Quick Start
+## Fast Windows Workflow
+
+This works without installing Python:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\viral-social-publisher.ps1 -Command telegram-request
+powershell -ExecutionPolicy Bypass -File scripts\viral-social-publisher.ps1 -Command telegram-bot
+```
+
+The first command creates today's image/caption and sends the Telegram approval buttons. The second command listens for your Telegram button click.
+
+## Python Workflow
 
 ```bash
 python -m venv .venv
@@ -28,63 +39,36 @@ python -m viral_publisher approve --platforms dry_run
 
 Generated drafts and media are saved in `output/`.
 
-## Daily Workflow
+## Gemini / OpenRouter Setup
 
-Run this at 11:00 AM to prepare a draft and ask for confirmation:
-
-```bash
-python -m viral_publisher daily --videos 2
-```
-
-For Telegram approval:
-
-```bash
-python -m viral_publisher telegram-bot
-python -m viral_publisher telegram-request --videos 2
-```
-
-For hands-off scheduling, use Windows Task Scheduler, a server cron job, or GitHub Actions. Keep the approval step enabled so nothing posts without your permission.
-
-## Gemini Setup
-
-Add your Gemini API key to `.env`:
+Add keys to `.env`:
 
 ```text
 GEMINI_API_KEY=your_key_here
 GEMINI_MODEL=gemini-2.0-flash
+OPENROUTER_API_KEY=your_key_here
+OPENROUTER_MODEL=openrouter/free
 ```
 
-The writer uses source feeds as research notes only. It is instructed not to copy article sentences or headlines into the public post. If Gemini is unavailable or the free tier limit is reached, the app falls back to a simpler original template.
+The writer uses source feeds as research notes only. It is instructed not to copy article sentences or headlines into the public post.
 
 ## Real Platform Posting
 
 You will need official API credentials:
 
-- Instagram and Facebook: Meta Graph API with a Business/Creator account and Page connection.
+- Instagram and Facebook: Meta/Instagram API permissions and access tokens.
 - LinkedIn: LinkedIn developer app with posting permissions.
 - YouTube Shorts: YouTube Data API, OAuth credentials, and a valid short video file.
-
-Add credentials to `.env`, then replace `dry_run` with the target platforms.
-
-```bash
-python -m viral_publisher approve --platforms instagram facebook linkedin youtube
-```
 
 For Telegram direct posting, set:
 
 ```text
-APPROVED_PLATFORMS=instagram facebook linkedin
+APPROVED_PLATFORMS=instagram
 ```
 
-## Why It Does Not Use "Any Trending Music"
+## GitHub Media Hosting
 
-Using random trending music can get accounts restricted because music rights differ by platform, region, and account type. This project creates original audio locally for free. You can also replace it with licensed music that you have the right to use.
-
-## About Platform Drafts
-
-Instagram and LinkedIn let humans save drafts in their apps, but their official publishing APIs are designed around creating and publishing media through authenticated endpoints. This project saves a local draft package in `output/` and can publish through official APIs after Telegram approval when your accounts and API permissions are connected. That is the reliable automation path.
-
-For Instagram direct posting, the API needs a public URL for the generated video or image. The simplest free path is GitHub-hosted media:
+Instagram direct posting needs a public URL for the generated video or image. The simplest free path is GitHub-hosted media:
 
 ```text
 GITHUB_TOKEN=your_github_personal_access_token
@@ -93,4 +77,8 @@ GITHUB_MEDIA_BRANCH=main
 GITHUB_MEDIA_PATH=media
 ```
 
-When `PUBLIC_VIDEO_URL` is not set, the Instagram publisher uploads the generated video to the repo and uses the raw GitHub URL automatically.
+The PowerShell runner currently posts an image to Instagram. The Python path can generate short videos when Python and FFmpeg/moviepy dependencies are available.
+
+## Why It Does Not Use "Any Trending Music"
+
+Using random trending music can get accounts restricted because music rights differ by platform, region, and account type. This project creates original audio locally for free. You can also replace it with licensed music that you have the right to use.
