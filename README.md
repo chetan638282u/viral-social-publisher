@@ -66,16 +66,21 @@ For Telegram direct posting, set:
 APPROVED_PLATFORMS=instagram
 ```
 
-## GitHub Media Hosting
+## Media Hosting
 
-Instagram direct posting needs a public URL for the generated video or image. The simplest free path is GitHub-hosted media:
+Instagram direct posting needs a public URL for the generated image or video. The PowerShell runner tries these in order:
+
+1. If `GITHUB_TOKEN` is set, upload media to your GitHub repo and use the raw GitHub URL.
+2. If `GITHUB_TOKEN` is blank, upload the image to Catbox anonymous hosting and use that public URL.
 
 ```text
-GITHUB_TOKEN=your_github_personal_access_token
+GITHUB_TOKEN=your_github_personal_access_token_optional
 GITHUB_REPOSITORY=chetan638282u/viral-social-publisher
 GITHUB_MEDIA_BRANCH=main
 GITHUB_MEDIA_PATH=media
 ```
+
+Catbox is faster to start with because it needs no token, but GitHub-hosted media is more reliable for daily automation.
 
 The PowerShell runner currently posts an image to Instagram. The Python path can generate short videos when Python and FFmpeg/moviepy dependencies are available.
 
