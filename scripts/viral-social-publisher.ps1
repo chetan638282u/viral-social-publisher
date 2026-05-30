@@ -208,9 +208,10 @@ function Handle-Callback($Callback) {
         return
     }
     if ($Callback.data -eq "post_latest") {
+        Invoke-Telegram "answerCallbackQuery" @{ callback_query_id = $Callback.id; text = "Posting to Instagram..." } | Out-Null
+        Invoke-Telegram "sendMessage" @{ chat_id = $chatId; text = "Posting to Instagram now. I will send the result here." } | Out-Null
         try {
             $result = Publish-Instagram
-            Invoke-Telegram "answerCallbackQuery" @{ callback_query_id = $Callback.id; text = "Posted." } | Out-Null
             Invoke-Telegram "sendMessage" @{ chat_id = $chatId; text = "Instagram result:`n$($result | ConvertTo-Json -Depth 5)" } | Out-Null
         } catch {
             Invoke-Telegram "sendMessage" @{ chat_id = $chatId; text = "Direct post failed:`n$($_.Exception.Message)" } | Out-Null
@@ -220,8 +221,17 @@ function Handle-Callback($Callback) {
 
 function Send-SavedPackage($ChatId) {
     $draft = Get-Content -Raw $DraftPath | ConvertFrom-Json
-    Invoke-Telegram "sendMessage" @{ chat_id = $ChatId; text = "Saved package:`n`n$($draft.caption)`n`n$($draft.hashtags)" } | Out-Null
-    Send-TelegramFile "sendPhoto" $draft.image_path "photo" @{ chat_id = $ChatId; caption = "Image for manual upload" } | Out-Null
+    $packageDir = Join-Path $OutputDir "manual-upload-package"
+    New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+    $captionPath = Join-Path $packageDir "caption.txt"
+    $imagePath = Join-Path $packageDir "post-image.png"
+    "Caption:`n$($draft.caption)`n`nHashtags:`n$($draft.hashtags)`n`nSource:`n$($draft.source_url)" | Set-Content -LiteralPath $captionPath -Encoding UTF8
+    Copy-Item -LiteralPath $draft.image_path -Destination $imagePath -Force
+
+    Invoke-Telegram "sendMessage" @{ chat_id = $ChatId; text = "Saved package ready. Download the image/document below, then upload it manually to Instagram. Caption:`n`n$($draft.caption)`n`n$($draft.hashtags)" } | Out-Null
+    Send-TelegramFile "sendPhoto" $imagePath "photo" @{ chat_id = $ChatId; caption = "Preview image" } | Out-Null
+    Send-TelegramFile "sendDocument" $imagePath "document" @{ chat_id = $ChatId; caption = "Download this image for manual upload" } | Out-Null
+    Send-TelegramFile "sendDocument" $captionPath "document" @{ chat_id = $ChatId; caption = "Caption and hashtags text file" } | Out-Null
 }
 
 function Publish-Instagram {
