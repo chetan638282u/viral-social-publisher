@@ -2,6 +2,8 @@ import argparse
 import json
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from viral_publisher.config import load_config
 from viral_publisher.content import create_draft
 from viral_publisher.media import create_original_audio, create_short_video, create_text_image
@@ -36,6 +38,7 @@ def main() -> None:
     subparsers.add_parser("telegram-bot", help="Run the Telegram approval listener.")
 
     args = parser.parse_args()
+    load_dotenv()
 
     if args.command == "draft":
         draft = build_draft(args.config, video_count=args.videos)
