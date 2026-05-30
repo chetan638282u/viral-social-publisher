@@ -70,6 +70,12 @@ Add credentials to `.env`, then replace `dry_run` with the target platforms.
 python -m viral_publisher approve --platforms instagram facebook linkedin youtube
 ```
 
+For Telegram direct posting, set:
+
+```text
+APPROVED_PLATFORMS=instagram facebook linkedin
+```
+
 ## Why It Does Not Use "Any Trending Music"
 
 Using random trending music can get accounts restricted because music rights differ by platform, region, and account type. This project creates original audio locally for free. You can also replace it with licensed music that you have the right to use.
@@ -77,3 +83,14 @@ Using random trending music can get accounts restricted because music rights dif
 ## About Platform Drafts
 
 Instagram and LinkedIn let humans save drafts in their apps, but their official publishing APIs are designed around creating and publishing media through authenticated endpoints. This project saves a local draft package in `output/` and can publish through official APIs after Telegram approval when your accounts and API permissions are connected. That is the reliable automation path.
+
+For Instagram direct posting, the API needs a public URL for the generated video or image. The simplest free path is GitHub-hosted media:
+
+```text
+GITHUB_TOKEN=your_github_personal_access_token
+GITHUB_REPOSITORY=chetan638282u/viral-social-publisher
+GITHUB_MEDIA_BRANCH=main
+GITHUB_MEDIA_PATH=media
+```
+
+When `PUBLIC_VIDEO_URL` is not set, the Instagram publisher uploads the generated video to the repo and uses the raw GitHub URL automatically.
