@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instagram Authorization Complete</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 48px auto; padding: 0 20px; line-height: 1.5; }
+    code { word-break: break-all; background: #f2f2f2; padding: 2px 4px; border-radius: 4px; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Instagram authorization complete</h1>
+  <div class="box">
+    <p>If this page opened after Instagram login, the authorization code is in the page URL.</p>
+    <p>Copy the full URL from the browser address bar and paste it into the local automation when requested.</p>
+    <p id="codeLine"></p>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    document.getElementById('codeLine').innerHTML = code
+      ? 'Authorization code: <code>' + code.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</code>'
+      : 'No authorization code is present yet.';
+  </script>
+</body>
+</html>
